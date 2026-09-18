@@ -50,41 +50,31 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     print("\nНачинаю очистку...")
     n_start = len(df)
 
-    # ---- Шаг 1. Убираем отмены (InvoiceNo начинается с 'C') ----
     n_before = len(df)
     df = df[~df["InvoiceNo"].astype(str).str.startswith("C")]
     print(f"  1. Убрал отмены:               {n_before - len(df):>7,}  строк -> осталось {len(df):,}")
 
-    # ---- Шаг 2. Quantity > 0 ----
     n_before = len(df)
     df = df[df["Quantity"] > 0]
     print(f"  2. Убрал Quantity <= 0:        {n_before - len(df):>7,}  строк -> осталось {len(df):,}")
 
-    # ---- Шаг 3. UnitPrice > 0 ----
     n_before = len(df)
     df = df[df["UnitPrice"] > 0]
     print(f"  3. Убрал UnitPrice <= 0:       {n_before - len(df):>7,}  строк -> осталось {len(df):,}")
 
-    # ---- Шаг 4. CustomerID не NaN ----
     n_before = len(df)
     df = df[df["CustomerID"].notna()]
     print(f"  4. Убрал NaN CustomerID:       {n_before - len(df):>7,}  строк -> осталось {len(df):,}")
 
-    # ---- Шаг 5. Убираем служебные StockCode ----
     n_before = len(df)
     df = df[~df["StockCode"].astype(str).str.upper().isin(SERVICE_CODES)]
     print(f"  5. Убрал служебные StockCode:  {n_before - len(df):>7,}  строк -> осталось {len(df):,}")
 
-    # ---- Шаг 6. Парсим дату ----
     print("  6. Парсю InvoiceDate...")
     df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"], dayfirst=False)
 
-    # ---- Шаг 7. CustomerID -> int ----
     df["CustomerID"] = df["CustomerID"].astype(int)
 
-    # ---- Шаг 8. Заполняем пропуски Description по StockCode ----
-    # Идея: у каждого StockCode самое частое описание.
-    # Если у товара пропущено описание — подставим моду по этому StockCode.
     print("  8. Заполняю пропуски Description по StockCode...")
     desc_map = (
         df.dropna(subset=["Description"])
@@ -95,17 +85,12 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     # Если всё ещё NaN (значит, у этого StockCode вообще нет описаний) — просто убираем
     df = df.dropna(subset=["Description"])
 
-    # ---- Шаг 9. Удаляем полные дубликаты ----
     n_before = len(df)
     df = df.drop_duplicates()
     print(f"  9. Убрал дубликаты:            {n_before - len(df):>7,}  строк -> осталось {len(df):,}")
 
-    # ---- Шаг 10. TotalPrice ----
     df["TotalPrice"] = df["Quantity"] * df["UnitPrice"]
 
-    # ---- Шаг 11. Сортировка ----
-    # КРИТИЧНО для рекомендаций: последовательности должны быть
-    # упорядочены по времени для каждого клиента.
     df = df.sort_values(["CustomerID", "InvoiceDate"]).reset_index(drop=True)
 
     print(f"\nОчистка завершена: {n_start:,} -> {len(df):,} строк")
