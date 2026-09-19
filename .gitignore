@@ -15,6 +15,7 @@ data/processed/
 mlruns/
 *.pth
 *.pt
+checkpoints/
 
 # OS
 .DS_Store
