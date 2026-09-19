@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Python
+.venv
+__pycache__
+*.pyc
+.ipynb_checkpoints
+
+# Data (монтируем через volumes, в образ не пихаем)
+data/raw
+data/processed
+checkpoints
+
+# MLflow
+mlruns
+mlartifacts
+mlflow.db
+
+# Notebooks, tests, reports (не нужны в образе)
+notebooks
+tests
+reports
+
+# IDE, OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Docs
+*.md
+README.md
