@@ -17,6 +17,9 @@ mlruns/
 *.pt
 checkpoints/
 
+# Reports
+reports/figures/*.png
+
 # OS
 .DS_Store
 Thumbs.db
