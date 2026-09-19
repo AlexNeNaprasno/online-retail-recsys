@@ -1,0 +1,55 @@
+services:
+  # ---------- FastAPI + GRU4Rec ----------
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    image: online-retail-recsys-api:latest
+    container_name: recsys_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./checkpoints:/app/checkpoints:ro
+      - ./data/processed:/app/data/processed:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  # ---------- MLflow tracking server ----------
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.2
+    container_name: recsys_mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    restart: unless-stopped
+
+  # ---------- PostgreSQL ----------
+  postgres:
+    image: postgres:15
+    container_name: recsys_postgres
+    environment:
+      POSTGRES_USER: retail
+      POSTGRES_PASSWORD: retail
+      POSTGRES_DB: retail
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retail"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mlflow_data:
+  pg_data:
