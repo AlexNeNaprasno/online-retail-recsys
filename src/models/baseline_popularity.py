@@ -124,7 +124,7 @@ def main():
         "K": K,
         "val": val_metrics,
         "test": test_metrics,
-        "top_items": [int(x) for x in top_items],
+    "top_items": [int(x) for x in top_items],
     }
     out_path = RESULTS_DIR / "baseline_popularity.json"
     with open(out_path, "w", encoding="utf-8") as f:
