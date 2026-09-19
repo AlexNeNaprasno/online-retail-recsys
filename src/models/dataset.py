@@ -12,27 +12,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 ROOT = Path(__file__).resolve().parents[2]
 SPLITS_DIR = ROOT / "data" / "processed" / "splits"
 
-WINDOW = 20  
-PAD_IDX = 0  
+WINDOW = 20
+PAD_IDX = 0
 
 
 class SequenceDataset(Dataset):
-
-
     def __init__(self, sequences: list[list[int]], window: int = WINDOW):
         self.window = window
-        self.samples = []  
+        self.samples = []
 
         for seq in sequences:
             if len(seq) < 2:
                 continue
-            # Окна: для каждой позиции t (от 1 до len-1) берём
-            # input = seq[max(0, t-window):t], target = seq[t]
+            seq = list(seq)                 # numpy -> list ОДИН РАЗ
             for t in range(1, len(seq)):
                 inp = seq[max(0, t - window):t]
                 tgt = seq[t]
@@ -45,6 +42,7 @@ class SequenceDataset(Dataset):
 
     def __getitem__(self, idx):
         inp, tgt = self.samples[idx]
+        inp = list(inp)                     # страховка
         if len(inp) < self.window:
             pad = [PAD_IDX] * (self.window - len(inp))
             inp = pad + inp
@@ -55,14 +53,12 @@ class SequenceDataset(Dataset):
 
 
 def load_split(name: str) -> list[list[int]]:
-    """Загружает последовательности одного сета (train/val/test)."""
     path = SPLITS_DIR / f"{name}.parquet"
     df = pd.read_parquet(path)
     return df["sequence"].tolist()
 
 
 def build_datasets(window: int = WINDOW):
-    """Собирает три датасета."""
     print("Читаю splits...")
     train_seq = load_split("train")
     val_seq   = load_split("val")
@@ -89,7 +85,18 @@ if __name__ == "__main__":
     print(f"  test:  {len(test_ds):,}")
 
     x, y = train_ds[0]
-    print(f"\nПример:")
-    print(f"  input shape: {x.shape}")
+    print(f"\nПример train_ds[0]:")
+    print(f"  input shape: {tuple(x.shape)}")
     print(f"  input:       {x.tolist()}")
     print(f"  target:      {y.item()}")
+
+    print("\nПроверка форм:")
+    for i in [0, 1, 2, 10, 100, 1000, 10000]:
+        x, y = train_ds[i]
+        print(f"  train_ds[{i}]: x.shape={tuple(x.shape)}, y={y.item()}")
+
+    loader = DataLoader(train_ds, batch_size=4, shuffle=False)
+    xb, yb = next(iter(loader))
+    print(f"\nБатч: x={tuple(xb.shape)}, y={tuple(yb.shape)}")
+    print(f"x_batch[0] = {xb[0].tolist()}")
+    print(f"y_batch    = {yb.tolist()}")
