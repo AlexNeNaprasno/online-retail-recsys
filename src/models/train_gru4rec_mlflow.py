@@ -233,8 +233,8 @@ def main():
         print(f"  VAL:  {val_metrics}")
         print(f"  TEST: {test_metrics}")
 
-        mlflow.log_metrics({f"val_{k}": v for k, v in val_metrics.items()})
-        mlflow.log_metrics({f"test_{k}": v for k, v in test_metrics.items()})
+        mlflow.log_metrics({f"val_{_safe_metric_name(k)}": v for k, v in val_metrics.items()})
+        mlflow.log_metrics({f"test_{_safe_metric_name(k)}": v for k, v in test_metrics.items()})
         mlflow.log_metric("best_val_loss", best_val_loss)
 
         fig_path = ROOT / "reports" / "figures" / "mlflow_training_curve.png"
