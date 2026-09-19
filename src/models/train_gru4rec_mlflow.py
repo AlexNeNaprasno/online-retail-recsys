@@ -43,6 +43,9 @@ SEED = 42
 EXPERIMENT_NAME = "online-retail-recsys"
 RUN_NAME = f"gru4rec_emb{EMB_DIM}_hid{HIDDEN_DIM}_lr{LR}"
 
+def _safe_metric_name(name: str) -> str:
+    """MLflow запрещает '@' в именах метрик."""
+    return name.replace("@", "_at_")
 
 def set_seed(seed: int):
     random.seed(seed)
