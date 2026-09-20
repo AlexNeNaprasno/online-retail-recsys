@@ -27,3 +27,6 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+airflow/logs/
+airflow/__pycache__/
