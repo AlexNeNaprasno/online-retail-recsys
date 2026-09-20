@@ -27,8 +27,7 @@ OUT_PATH = ROOT / "data" / "processed" / "retail_clean.parquet"
 
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-# Служебные StockCode — это не товары, а услуги/сборы.
-# Их нужно убрать, иначе они попадут в словарь товаров как «псевдо-товары».
+
 SERVICE_CODES = {
     "POST", "DOT", "M", "BANK CHARGES", "AMAZONFEE",
     "C2", "D", "S", "TEST", "ADJUST", "B", "CRUK",
